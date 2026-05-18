@@ -8,23 +8,31 @@ export function AuthProvider({ children }) {
   const [clinicData, setClinicData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  async function loadClinicData(userId, email) {
+  async function loadClinicData(user) {
+    if (!user) return;
     try {
       const { data, error } = await supabase
         .from('clinics')
         .select('*')
-        .eq('id', userId)
+        .eq('id', user.id)
         .single();
         
       if (error && error.code === 'PGRST116') { // Record not found
-        const slug = `clinica-${userId.substring(0, 5)}`;
+        const clinicName = user.user_metadata?.clinic_name || 'Minha Clínica';
+        const slug = clinicName
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '');
+
         const { data: newClinic, error: createError } = await supabase
           .from('clinics')
           .insert({
-            id: userId,
-            name: 'Minha Clínica',
+            id: user.id,
+            name: clinicName,
             slug: slug,
-            email: email || '',
+            email: user.email || '',
             phone: '',
             address: '',
           })
@@ -47,7 +55,7 @@ export function AuthProvider({ children }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        loadClinicData(session.user.id, session.user.email);
+        loadClinicData(session.user);
       } else {
         setLoading(false);
       }
@@ -57,7 +65,7 @@ export function AuthProvider({ children }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        loadClinicData(session.user.id, session.user.email);
+        loadClinicData(session.user);
       } else {
         setClinicData(null);
         setLoading(false);
@@ -80,43 +88,21 @@ export function AuthProvider({ children }) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      // Passando o clinicName no metadata (opcional, mas bom ter)
+      options: {
+        data: {
+          clinic_name: clinicName
+        }
+      }
     });
     
     if (error) throw error;
 
-    const slug = clinicName
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+    // Não tentamos mais inserir a clínica aqui, pois o usuário ainda não confirmou o e-mail.
+    // A inserção no banco estava causando o erro de RLS.
+    // A clínica será criada automaticamente pela função loadClinicData 
+    // assim que o usuário confirmar o e-mail e fizer o login.
     
-    // Create clinic document
-    const { error: clinicError } = await supabase
-      .from('clinics')
-      .insert({
-        id: data.user.id,
-        name: clinicName,
-        slug: slug,
-        email: email,
-        phone: '',
-        address: '',
-      });
-
-    if (clinicError) {
-      console.error('Error creating clinic:', clinicError);
-      throw clinicError;
-    }
-
-    setClinicData({
-      id: data.user.id,
-      name: clinicName,
-      slug: slug,
-      email: email,
-      phone: '',
-      address: '',
-    });
-
     return data.user;
   };
 
