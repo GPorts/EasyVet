@@ -37,9 +37,10 @@ export default function Register() {
     try {
       await signUp(email, password, clinicName.trim());
       
-      // REDIRECIONAMENTO PARA A CAKTO:
-      // Substitua SEU_LINK_AQUI pelo link de checkout do seu produto na Cakto.
-      // O parâmetro ?email= ou &email= garante que a Cakto vai enviar esse email no webhook.
+      // Ao invés de redirecionar para a Cakto imediatamente, mostra a mensagem
+      alert('Cadastro realizado com sucesso! Um e-mail de confirmação foi enviado. Por favor, verifique sua caixa de entrada (ou spam) para confirmar sua conta antes de continuar.');
+      
+      // Depois da mensagem, podemos redirecionar para a Cakto (ou para o login)
       const caktoLink = `https://pay.cakto.com.br/SEU_LINK_AQUI?email=${encodeURIComponent(email)}`;
       window.location.href = caktoLink;
       
