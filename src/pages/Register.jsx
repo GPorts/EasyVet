@@ -36,7 +36,13 @@ export default function Register() {
     setLoading(true);
     try {
       await signUp(email, password, clinicName.trim());
-      navigate('/');
+      
+      // REDIRECIONAMENTO PARA A CAKTO:
+      // Substitua SEU_LINK_AQUI pelo link de checkout do seu produto na Cakto.
+      // O parâmetro ?email= ou &email= garante que a Cakto vai enviar esse email no webhook.
+      const caktoLink = `https://pay.cakto.com.br/SEU_LINK_AQUI?email=${encodeURIComponent(email)}`;
+      window.location.href = caktoLink;
+      
     } catch (err) {
       console.error('Signup error:', err);
       setError(err.message || 'Erro ao criar conta. Tente novamente.');

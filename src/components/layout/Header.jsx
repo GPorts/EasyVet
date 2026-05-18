@@ -32,9 +32,21 @@ export default function Header({ title, subtitle, onMenuClick }) {
               {clinicData?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'V'}
             </div>
             <div className="hidden sm:block">
-              <p className="text-sm font-semibold text-surface-800 leading-tight">
-                {clinicData?.name || 'Clínica'}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-semibold text-surface-800 leading-tight">
+                  {clinicData?.name || 'Clínica'}
+                </p>
+                {clinicData?.plan_status === 'active' && (
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-700 uppercase tracking-wider">
+                    Premium
+                  </span>
+                )}
+                {clinicData?.plan_status === 'trial' && (
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">
+                    Trial
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-surface-400 leading-tight">{user?.email}</p>
             </div>
           </div>

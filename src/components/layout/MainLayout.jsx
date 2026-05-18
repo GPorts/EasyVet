@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import MobileNav from './MobileNav';
 import MobileSidebar from './MobileSidebar';
+import Paywall from '../shared/Paywall';
 
 const pageTitles = {
   '/': { title: 'Dashboard', subtitle: 'Visão geral da sua clínica' },
@@ -42,8 +43,10 @@ export default function MainLayout() {
           subtitle={currentPage.subtitle}
           onMenuClick={() => setMobileSidebarOpen(true)}
         />
-        <div className="p-6 lg:p-10 pb-24 lg:pb-10">
-          <Outlet />
+        <div className="p-6 lg:p-10 pb-24 lg:pb-10 h-full">
+          <Paywall featureName="o sistema">
+            <Outlet />
+          </Paywall>
         </div>
       </main>
 
