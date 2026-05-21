@@ -29,7 +29,9 @@ export default function PDV() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [lastSale, setLastSale] = useState(null);
   const [cashReceived, setCashReceived] = useState('');
+  const [isFinalizing, setIsFinalizing] = useState(false);
   const searchRef = useRef(null);
+  const isProcessing = useRef(false);
 
   // Auto focus search on mount
   useEffect(() => {
@@ -94,6 +96,10 @@ export default function PDV() {
   // Finalize sale
   const handleFinalize = async () => {
     if (cart.length === 0) return;
+    // Guard against double-click / race condition
+    if (isProcessing.current) return;
+    isProcessing.current = true;
+    setIsFinalizing(true);
     try {
       const result = await finalizeSale(cart, paymentMethod);
       setLastSale({ total: result.total, items: cart.length, method: paymentMethod });
@@ -101,6 +107,9 @@ export default function PDV() {
       clearCart();
     } catch (err) {
       alert('Erro ao finalizar venda: ' + (err.message || 'Tente novamente'));
+    } finally {
+      isProcessing.current = false;
+      setIsFinalizing(false);
     }
   };
 
@@ -333,8 +342,8 @@ export default function PDV() {
               {/* Finalize Button */}
               <Button
                 onClick={handleFinalize}
-                loading={saleLoading}
-                disabled={cart.length === 0}
+                loading={isFinalizing}
+                disabled={cart.length === 0 || isFinalizing}
                 className="w-full py-3.5 text-base"
                 icon={Receipt}
               >

@@ -24,12 +24,14 @@ const speciesOptions = [
 const speciesIcons = { dog: Dog, cat: Cat, bird: Bird, rabbit: Rabbit };
 
 export default function Pets() {
-  const { loadPets, createPet, updatePet, deletePet, searchPets, loading } = usePets();
+  const { loadPets, createPet, updatePet, deletePet, searchPets } = usePets();
   const { tutors, loadTutors } = useTutors();
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [form, setForm] = useState({
     name: '', species: 'dog', breed: '', age: '', weight: '', tutorId: '', photoUrl: '',
   });
@@ -45,6 +47,8 @@ export default function Pets() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
     try {
       const tutorData = tutors.find(t => t.id === form.tutorId);
       const data = { ...form, tutorName: tutorData?.name || '' };
@@ -57,6 +61,8 @@ export default function Pets() {
       resetForm();
     } catch (err) {
       console.error('Error saving pet:', err);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -70,11 +76,15 @@ export default function Pets() {
   };
 
   const handleDelete = async (id) => {
+    if (deleting) return;
+    setDeleting(true);
     try {
       await deletePet(id);
       setDeleteConfirm(null);
     } catch (err) {
       console.error('Error deleting pet:', err);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -161,8 +171,8 @@ export default function Pets() {
           </div>
           <Select label="Tutor" value={form.tutorId} onChange={e => setForm(f => ({ ...f, tutorId: e.target.value }))} options={tutors.map(t => ({ value: t.id, label: t.name }))} required />
           <div className="flex justify-end gap-3 pt-4 border-t border-surface-100">
-            <Button variant="ghost" type="button" onClick={() => { setShowModal(false); resetForm(); }}>Cancelar</Button>
-            <Button type="submit" loading={loading}>{editing ? 'Salvar' : 'Cadastrar'}</Button>
+            <Button variant="ghost" type="button" disabled={submitting} onClick={() => { setShowModal(false); resetForm(); }}>Cancelar</Button>
+            <Button type="submit" loading={submitting}>{editing ? 'Salvar' : 'Cadastrar'}</Button>
           </div>
         </form>
       </Modal>
@@ -171,8 +181,8 @@ export default function Pets() {
       <Modal isOpen={!!deleteConfirm} onClose={() => setDeleteConfirm(null)} title="Confirmar Exclusão" size="sm">
         <p className="text-surface-600 text-sm mb-6">Tem certeza que deseja excluir este pet? Esta ação não pode ser desfeita.</p>
         <div className="flex justify-end gap-3">
-          <Button variant="ghost" onClick={() => setDeleteConfirm(null)}>Cancelar</Button>
-          <Button variant="danger" onClick={() => handleDelete(deleteConfirm)}>Excluir</Button>
+          <Button variant="ghost" disabled={deleting} onClick={() => setDeleteConfirm(null)}>Cancelar</Button>
+          <Button variant="danger" loading={deleting} onClick={() => handleDelete(deleteConfirm)}>Excluir</Button>
         </div>
       </Modal>
     </div>

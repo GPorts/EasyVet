@@ -8,7 +8,6 @@ import { useData } from '../contexts/DataContext';
  */
 export function useSales() {
   const { user } = useAuth();
-  const { refreshProducts } = useData();
   const [loading, setLoading] = useState(false);
   const [sales, setSales] = useState([]);
 
@@ -79,8 +78,10 @@ export function useSales() {
         }
       }
 
-      // 3. Refresh products cache to reflect new stock
-      await refreshProducts();
+      // 3. The real-time subscription in DataContext will automatically
+      //    refresh the products cache when stock changes are detected.
+      //    Calling refreshProducts() manually here would cause a race
+      //    condition with the subscription, resulting in NetworkError.
 
       return { success: true, total };
     } catch (err) {
@@ -89,7 +90,7 @@ export function useSales() {
     } finally {
       setLoading(false);
     }
-  }, [user, refreshProducts]);
+  }, [user]);
 
   // Get today's sales summary
   const getTodaySummary = useCallback(() => {
