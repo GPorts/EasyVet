@@ -22,8 +22,9 @@ export function useTutors() {
       .select()
       .single();
     if (error) throw error;
+    await refreshTutors();
     return inserted;
-  }, [user]);
+  }, [user, refreshTutors]);
 
   const updateTutor = useCallback(async (id, data) => {
     if (!user) throw new Error('User not authenticated');
@@ -35,7 +36,8 @@ export function useTutors() {
       .eq('clinic_id', user.id)
       .eq('id', id);
     if (error) throw error;
-  }, [user]);
+    await refreshTutors();
+  }, [user, refreshTutors]);
 
   const deleteTutor = useCallback(async (id) => {
     if (!user) throw new Error('User not authenticated');
@@ -45,7 +47,8 @@ export function useTutors() {
       .eq('clinic_id', user.id)
       .eq('id', id);
     if (error) throw error;
-  }, [user]);
+    await refreshTutors();
+  }, [user, refreshTutors]);
 
   const searchTutors = useCallback((searchTerm) => {
     if (!searchTerm) return tutors;

@@ -23,8 +23,9 @@ export function useInventory() {
       .select()
       .single();
     if (error) throw error;
+    await refreshProducts();
     return inserted;
-  }, [user]);
+  }, [user, refreshProducts]);
 
   const updateProduct = useCallback(async (id, data) => {
     if (!user) throw new Error('User not authenticated');
@@ -36,7 +37,8 @@ export function useInventory() {
       .eq('clinic_id', user.id)
       .eq('id', id);
     if (error) throw error;
-  }, [user]);
+    await refreshProducts();
+  }, [user, refreshProducts]);
 
   const deleteProduct = useCallback(async (id) => {
     if (!user) throw new Error('User not authenticated');
@@ -46,8 +48,10 @@ export function useInventory() {
       .eq('clinic_id', user.id)
       .eq('id', id);
     if (error) throw error;
-  }, [user]);
+    await refreshProducts();
+  }, [user, refreshProducts]);
 
+  // Quick sale - decrease stock
   const quickSale = useCallback(async (productId, quantity) => {
     const product = products.find(p => p.id === productId);
     if (!product) throw new Error('Product not found');
@@ -59,8 +63,9 @@ export function useInventory() {
       .eq('clinic_id', user.id)
       .eq('id', productId);
     if (error) throw error;
+    await refreshProducts();
     return newQty;
-  }, [products, user]);
+  }, [products, user, refreshProducts]);
 
   // Get low stock products
   const getLowStockProducts = useCallback(() => {
