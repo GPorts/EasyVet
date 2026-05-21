@@ -16,6 +16,14 @@ export function DataProvider({ children }) {
   // Track if initial load has been done to avoid re-fetching
   const hasLoaded = useRef(false);
 
+  // In-flight promise refs — prevents concurrent duplicate fetches
+  // When refreshX() is called while another refreshX() is already running,
+  // the second call reuses the first's promise instead of firing a new request.
+  const inflightPets = useRef(null);
+  const inflightTutors = useRef(null);
+  const inflightProducts = useRef(null);
+  const inflightAppointments = useRef(null);
+
   // Generic fetch helper
   const fetchTable = useCallback(async (tableName, orderBy = 'created_at', direction = 'asc') => {
     if (!user) return [];
@@ -56,28 +64,37 @@ export function DataProvider({ children }) {
   }, [user, fetchTable]);
 
   // Individual reload functions (for after create/update/delete)
+  // Each uses an in-flight ref so concurrent calls share the same fetch promise.
   const refreshPets = useCallback(async () => {
-    const data = await fetchTable('pets', 'name', 'asc');
-    setPets(data);
-    return data;
+    if (inflightPets.current) return inflightPets.current;
+    inflightPets.current = fetchTable('pets', 'name', 'asc')
+      .then(data => { setPets(data); return data; })
+      .finally(() => { inflightPets.current = null; });
+    return inflightPets.current;
   }, [fetchTable]);
 
   const refreshTutors = useCallback(async () => {
-    const data = await fetchTable('tutors', 'name', 'asc');
-    setTutors(data);
-    return data;
+    if (inflightTutors.current) return inflightTutors.current;
+    inflightTutors.current = fetchTable('tutors', 'name', 'asc')
+      .then(data => { setTutors(data); return data; })
+      .finally(() => { inflightTutors.current = null; });
+    return inflightTutors.current;
   }, [fetchTable]);
 
   const refreshProducts = useCallback(async () => {
-    const data = await fetchTable('products', 'name', 'asc');
-    setProducts(data);
-    return data;
+    if (inflightProducts.current) return inflightProducts.current;
+    inflightProducts.current = fetchTable('products', 'name', 'asc')
+      .then(data => { setProducts(data); return data; })
+      .finally(() => { inflightProducts.current = null; });
+    return inflightProducts.current;
   }, [fetchTable]);
 
   const refreshAppointments = useCallback(async () => {
-    const data = await fetchTable('appointments', 'date', 'asc');
-    setAppointments(data);
-    return data;
+    if (inflightAppointments.current) return inflightAppointments.current;
+    inflightAppointments.current = fetchTable('appointments', 'date', 'asc')
+      .then(data => { setAppointments(data); return data; })
+      .finally(() => { inflightAppointments.current = null; });
+    return inflightAppointments.current;
   }, [fetchTable]);
 
   // Load all data once when user becomes available
