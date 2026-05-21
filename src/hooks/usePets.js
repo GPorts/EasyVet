@@ -42,9 +42,8 @@ export function usePets() {
       .select()
       .single();
     if (error) throw error;
-    await refreshPets();
     return inserted;
-  }, [user, refreshPets]);
+  }, [user]);
 
   const updatePet = useCallback(async (id, data) => {
     if (!user) throw new Error('User not authenticated');
@@ -56,8 +55,7 @@ export function usePets() {
       .eq('clinic_id', user.id)
       .eq('id', id);
     if (error) throw error;
-    await refreshPets();
-  }, [user, refreshPets]);
+  }, [user]);
 
   const deletePet = useCallback(async (id) => {
     if (!user) throw new Error('User not authenticated');
@@ -67,8 +65,7 @@ export function usePets() {
       .eq('clinic_id', user.id)
       .eq('id', id);
     if (error) throw error;
-    await refreshPets();
-  }, [user, refreshPets]);
+  }, [user]);
 
   // Add vaccine record to pet
   const addVaccine = useCallback(async (petId, vaccine) => {

@@ -42,7 +42,6 @@ export function useAppointments() {
     return appointments.filter(apt => apt.date >= monthStart && apt.date <= monthEnd);
   }, [appointments]);
 
-  // Create appointment
   const createAppointment = useCallback(async (data) => {
     if (!user) throw new Error('User not authenticated');
     setLoading(true);
@@ -58,14 +57,12 @@ export function useAppointments() {
         .select()
         .single();
       if (error) throw error;
-      await refreshAppointments();
       return inserted;
     } finally {
       setLoading(false);
     }
-  }, [user, refreshAppointments]);
+  }, [user]);
 
-  // Update appointment status
   const updateStatus = useCallback(async (id, status) => {
     if (!user) throw new Error('User not authenticated');
     setLoading(true);
@@ -76,13 +73,11 @@ export function useAppointments() {
         .eq('clinic_id', user.id)
         .eq('id', id);
       if (error) throw error;
-      await refreshAppointments();
     } finally {
       setLoading(false);
     }
-  }, [user, refreshAppointments]);
+  }, [user]);
 
-  // Update appointment
   const updateAppointment = useCallback(async (id, data) => {
     if (!user) throw new Error('User not authenticated');
     setLoading(true);
@@ -95,13 +90,11 @@ export function useAppointments() {
         .eq('clinic_id', user.id)
         .eq('id', id);
       if (error) throw error;
-      await refreshAppointments();
     } finally {
       setLoading(false);
     }
-  }, [user, refreshAppointments]);
+  }, [user]);
 
-  // Delete appointment
   const deleteAppointment = useCallback(async (id) => {
     if (!user) throw new Error('User not authenticated');
     setLoading(true);
@@ -112,11 +105,10 @@ export function useAppointments() {
         .eq('clinic_id', user.id)
         .eq('id', id);
       if (error) throw error;
-      await refreshAppointments();
     } finally {
       setLoading(false);
     }
-  }, [user, refreshAppointments]);
+  }, [user]);
 
   // Count by status
   const countByStatus = useCallback((appointmentsList) => {

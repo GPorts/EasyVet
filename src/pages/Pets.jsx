@@ -61,6 +61,7 @@ export default function Pets() {
       resetForm();
     } catch (err) {
       console.error('Error saving pet:', err);
+      alert('Erro ao salvar pet: ' + (err.message || 'Tente novamente'));
     } finally {
       setSubmitting(false);
     }
@@ -83,6 +84,7 @@ export default function Pets() {
       setDeleteConfirm(null);
     } catch (err) {
       console.error('Error deleting pet:', err);
+      alert('Erro ao excluir pet: ' + (err.message || 'Tente novamente'));
     } finally {
       setDeleting(false);
     }
