@@ -18,6 +18,8 @@ export default function Tutors() {
   const [editing, setEditing] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [form, setForm] = useState({ name: '', cpf: '', phone: '', email: '', address: '' });
+  const [submittingTutor, setSubmittingTutor] = useState(false);
+  const [deletingTutor, setDeletingTutor] = useState(false);
 
 
 
@@ -31,14 +33,21 @@ export default function Tutors() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submittingTutor) return;
+    setSubmittingTutor(true);
     try {
-      if (editing) { await updateTutor(editing.id, form); }
-      else { await createTutor(form); }
+      if (editing) {
+        await updateTutor(editing.id, form);
+      } else {
+        await createTutor(form);
+      }
       setShowModal(false);
       resetForm();
-    } catch (err) { 
+    } catch (err) {
       console.error(err);
       alert('Erro ao salvar tutor: ' + (err.message || 'Erro desconhecido'));
+    } finally {
+      setSubmittingTutor(false);
     }
   };
 
@@ -146,8 +155,8 @@ export default function Tutors() {
           <Input label="E-mail" type="email" icon={Mail} value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="joao@email.com" />
           <Input label="Endereço" icon={MapPin} value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} placeholder="Rua, número, bairro" />
           <div className="flex justify-end gap-3 pt-4 border-t border-surface-100">
-            <Button variant="ghost" type="button" onClick={() => { setShowModal(false); resetForm(); }}>Cancelar</Button>
-            <Button type="submit" loading={loading}>{editing ? 'Salvar' : 'Cadastrar'}</Button>
+            <Button variant="ghost" type="button" disabled={submittingTutor} onClick={() => { setShowModal(false); resetForm(); }}>Cancelar</Button>
+            <Button type="submit" loading={submittingTutor}>{editing ? 'Salvar' : 'Cadastrar'}</Button>
           </div>
         </form>
       </Modal>
@@ -155,8 +164,20 @@ export default function Tutors() {
       <Modal isOpen={!!deleteConfirm} onClose={() => setDeleteConfirm(null)} title="Confirmar Exclusão" size="sm">
         <p className="text-surface-600 text-sm mb-6">Tem certeza que deseja excluir este tutor?</p>
         <div className="flex justify-end gap-3">
-          <Button variant="ghost" onClick={() => setDeleteConfirm(null)}>Cancelar</Button>
-          <Button variant="danger" onClick={async () => { await deleteTutor(deleteConfirm); setDeleteConfirm(null); }}>Excluir</Button>
+          <Button variant="ghost" disabled={deletingTutor} onClick={() => setDeleteConfirm(null)}>Cancelar</Button>
+          <Button variant="danger" loading={deletingTutor} onClick={async () => {
+            if (deletingTutor) return;
+            setDeletingTutor(true);
+            try {
+              await deleteTutor(deleteConfirm);
+            } catch (err) {
+              console.error(err);
+              alert('Erro ao excluir tutor: ' + (err.message || 'Erro desconhecido'));
+            } finally {
+              setDeletingTutor(false);
+              setDeleteConfirm(null);
+            }
+          }}>Excluir</Button>
         </div>
       </Modal>
     </div>
